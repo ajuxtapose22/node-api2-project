@@ -69,9 +69,39 @@ router.post('/', (req,res) => {
 })
 
 // 4 [PUT] /api/posts/:id
-router.put('/', (req,res) => {
+router.put('/:id', (req, res) => {
+    const { title, contents } = req.body; // Renamed body to contents for clarity
+    const { id } = req.params;
 
-})
+    if (!title || !contents) {
+        return res.status(400).json({
+            message: "Please provide title and contents for the post" 
+        });
+    }
+
+    Post.findById(id)
+        .then(post => {
+            if (!post) {
+                return res.status(404).json({
+                    message: "The post with the specified ID does not exist"
+                });
+            } else {
+                return Post.update(id, req.body);
+            }
+        })
+        .then(updatedPost => {
+            if (updatedPost) {
+                res.json(updatedPost);
+            }
+        })
+        .catch(err => {
+            console.error("Error updating post:", err);
+            res.status(500).json({
+                success: false,
+                message: "The post information could not be modified"
+            });
+        });
+});
 
 // 5 [DELETE] /api/posts/:id
 router.delete('/:id', async (req,res) => {
@@ -99,9 +129,32 @@ router.delete('/:id', async (req,res) => {
 })
 
 // 6 [GET] /api/posts/:id/comments
-router.get('/:id/comments', (req,res) => {
+router.get('/:id/comments', (req, res) => {
+    const { id } = req.params
 
+
+    Post.findById(id)
+        .then(post => {
+            if (!post) {
+                return res.status(404).json({
+                    message: "The post with the specified ID does not exist"
+                })
+
+            }      return Post.findPostComments(id)
+        })
+        .then(comments => {
+            if (comments) {
+                res.status(200).json(comments)
+            }
+        })
+        .catch(err => {
+            console.error("Error retrieving comments:", err)
+            res.status(500).json({
+                message: "The comments information could not be retrieved"
+            })
+        })
 })
+
 
 
 module.exports = router
