@@ -32,23 +32,40 @@ router.get('/:id', (req,res) => {
             res.status(200).json({
                 message: "Successful Post",
                 data: found
-            })
-        
+            })   
         })
     .catch(err => {
         console.log("Error POST", err)
         res.status(500).json({
             success: false,
             message: "The post information could not be retrieved"
-        })
-    }
-
-    )
-})
+        })})})
 
 // 3 [POST] /api/posts
 router.post('/', (req,res) => {
+    const { title, contents } = req.body
+    if(!title || !contents) {
+        res.status(400).json({
+            message: "Please provide title and contents for the post" 
+        })
+    } else {
+        Post.insert({ title, contents })
+        .then(({ id }) => {
+            return Post.findById(id)
+        })
+        .then(post => {
 
+            res.status(201).json({ post })
+        }
+        )
+        
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({
+                message: "The comments information could not be retrieved" 
+            })
+        })
+    }
 })
 
 // 4 [PUT] /api/posts/:id
